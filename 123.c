@@ -4,7 +4,7 @@
 #include <time.h>
 
 
-unsigned long long SEED = 3122891; // have value
+unsigned long long SEED = 32981; // have value
 //unsigned long long SEED = 3881111387891;
 unsigned long long RANV;
 int RANI = 0;
@@ -17,7 +17,7 @@ double minabs(double L1, double L2);
 double triangle(double L1, double L2);
 
 int main(){
-    double x,y;             // for normal random variable
+    double x, y;             // for normal random variable
     int i, j, k, m;         // for counting
     int step;
     int cod[8000];           // codeword
@@ -27,17 +27,12 @@ int main(){
     int num = 0;                // do compute block
     double Lj[8000];         // LLR
     double qij[3][8000];   // from down to top
-    //double uij[3][8000];
-    double uij[4000][6];   // from top to down
-    
+    double uij[4000][6];   // from top to down    
     int L[4000][6];          // check L(i)
     int M[8000][3];          // check M(j)
     int n,rc;   // n is column and rc is row
     int dv,dc;  // dv: column have #1 and dc: row have #1
     int a;      // no need
-    int input;
-    //int H[4000][8000];
-    //int Hcheck[4000][8000];
     double tempqij[5]; 
     double tempuij;
     double temp1uij[3];
@@ -80,6 +75,7 @@ int main(){
         fscanf(fpr,"%d",&M[j][0]);
         fscanf(fpr,"%d",&M[j][1]);
         fscanf(fpr,"%d",&M[j][2]);
+        //printf("M[%d][2] = %d", j, M[j][2]);
     }
 
     for (i = 0; i < 4000; i++) {
@@ -90,8 +86,9 @@ int main(){
         fscanf(fpr,"%d",&L[i][4]);
         fscanf(fpr,"%d",&L[i][5]);
     }
-    fclose(fpr);    
-    for(step = 0; step < 3; step++) {
+    fclose(fpr); 
+
+    for(step = 0; step < 1; step++) {
         s = 0;
         num = 0;
         totalerror = 0; 
@@ -99,22 +96,15 @@ int main(){
         while (s < 100/*s < 100*/) {
             num++;   //compute the number of transmit block 
             // pretend encoder
-            //printf("\n");
-            //printf("cod = ");
             for(i = 0; i < 8000; i++) {
                 cod[i] = 0;         // message
-                //printf("%d ", cod[i]);
             }
-            //printf("\n");
 
             //input to AWGN channel normalized to +-1
-            //printf("code = ");
             for(i = 0; i < 8000; i++) {
                 if(cod[i] == 0) code[i] = 1;
                 else code[i] = -1;
-                //printf("%d", code[i]);
             }
-            //printf("\n");
 
             ebn0 = ebn0s[step];
             //printf("ebn0s[%d] = %g\n", step, ebn0);
@@ -134,7 +124,7 @@ int main(){
             //printf("Lj[i] = \n");
             ebn0 = pow(10, ebn0/10);
             for(i = 0; i < 8000; i++) {
-                Lj[i] = 4 * 0.5 * ebn0 * outp[i];     //  0.5 * 1.2544 = Es/N0
+                Lj[i] = log2(4000) * 4 * 0.5 * ebn0 * outp[i];     //  0.5 * 1.2544 = Es/N0
                 //printf("%g ", Lj[i]);
             }
             //printf("\n");
@@ -182,8 +172,16 @@ int main(){
                             comput[L[i][m] - 1] += 1;
                         }*/
                         tempuij = tempqij[0];
+                        double app;
+                        double app1;
                         for(m = 1; m < 5; m++) {
-                            tempuij = sgn(tempuij) * sgn(tempqij[m]) * minabs(tempuij,tempqij[m]) + triangle(tempuij,tempqij[m]); 
+                            //tempuij = sgn(tempuij) * sgn(tempqij[m]) * minabs(tempuij,tempqij[m]) + triangle(tempuij,tempqij[m]); 
+                            app = sgn(tempuij) * sgn(tempqij[m]) * minabs(tempuij,tempqij[m]);
+                            app1 = triangle(tempuij,tempqij[m]);
+                            //printf("app = %g\n", app);
+                            //printf("app1 = %g\n", app1);
+                            //tempuij = ((sgn(tempuij) * sgn(tempqij[m]) * minabs(tempuij,tempqij[m])) + triangle(tempuij,tempqij[m]));
+                            tempuij = app + app1;
                         }
                         //valL2 = L[i][j]-1;
                         //uij[i][valL2] = tempuij;
@@ -208,7 +206,7 @@ int main(){
                             valL = M[j][m] - 1;
                             temp1uij[m] = uij[valL][comput1[valL]]; 
                         }
-                        else if (m >= j) {
+                        else if (m >= i) {
                             valL = M[j][m + 1] - 1;
                             temp1uij[m] = uij[valL][comput1[valL]];
                         }
@@ -224,11 +222,18 @@ int main(){
 
             // decision
             //printf("output = ");
+            int comput2[4000] = {0};
             for (j = 0; j < 8000; j++) {
-                qj[j] = Lj[j] + uij[0][j] + uij[1][j] + uij[2][j]; 
+                qj[j] = Lj[j];
+                for (i = 0; i < 3; i++) {
+                    valL = M[j][i] - 1;
+                    qj[j] += uij[valL][comput2[valL]];
+                }
                 if (qj[j] >= 0) output[j] = 0;
                 else if (qj[j] < 0) output[j] = 1;
-                //printf("%d ", output[j]);
+                for (i = 0; i < 3; i++) {
+                    comput2[M[j][i] - 1] += 1;
+                }
             }
             //printf("\n");
 
@@ -258,7 +263,7 @@ int main(){
                 s++;
             }
         }
-        //printf("k[%d] = %d\n", num, k);
+        printf("k[%d] = %d\n", num, k);
         error = 0;
         for(i = 0; i < 8000; i++) {
             if (output[i] != cod[i]) {
@@ -310,8 +315,8 @@ void normal(double sig, double *n1, double *n2)
         x2 = 2 * x2 - 1;
         s = x1 * x1 + x2 * x2;
     } while (s >= 1.0);
-    *n1 = sig * x1 * sqrt((-2.0 * log(s))/ s);
-    *n2 = sig * x2 * sqrt((-2.0 * log(s))/ s);
+    *n1 = sig * x1 * sqrt(((-2.0) * log(s))/ s);
+    *n2 = sig * x2 * sqrt(((-2.0) * log(s))/ s);
     
 }
 

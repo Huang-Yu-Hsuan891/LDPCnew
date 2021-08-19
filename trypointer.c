@@ -1,30 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
-/*int main() {
-  
-  int *array;
-  int n = 3;
-  int i;
-  array = new int [n];
-  if (array == NULL) {
-        // 無法取得記憶體空間
-        fprintf(stderr, "Error: unable to allocate required memory\n");
-        return 1;
-  }
-  array[0] =1;
-  array[1] =2;
-  array[2] = 3;
-  for (i = 0; i < n; i++) {
-    printf("%d ", array[i]);
-  }
-  delete array;     // 動態矩陣用完後還給系統, 這是好的習慣
-  n = 5;
-  array = new int [n];
-  array[0] =4;
-  array[1] =5;
-  array[2] =6;
-  for (i = 0; i < n; i++) {
-    printf("%d ", array[i]);
-  }
-  return 0;
-}*/
+int main() {
+    int rc = 2;   // rc is row  number
+    int n = 4;    // n is cloumn number
+    int i = 0, j = 0;
+    int **ptr2 = NULL;
+    int cnt = 0;
+    
+    ptr2 = (int **)malloc(rc * sizeof(int));
+    for (i = 0; i < rc; i++) ptr2[i] = (int *)malloc(n * sizeof(int));
+    for (i = 0; i < rc; i++) {
+      for(j = 0; j < n; j++) ptr2[i][j] = cnt++;
+    }
+    for (i = 0; i < rc; i++) {
+      for(j = 0; j < n; j++) printf("ptr2[%d][%d] = %d",i,j,ptr2[i][j]);
+      printf("\n");
+    }
+    for (i = 0; i < rc; i++) free(ptr2[i]);
+    free(ptr2);
+    return 0;
+
+} 

@@ -69,6 +69,11 @@ int main(){
     berscompare[4] = 8.34 * pow(10,-5);
     berscompare[5] = 2.799 * pow(10,-7);
 
+    bers[0] = 0.0635426;
+    bers[1] = 0.0317972;
+    bers[2] = 0.0121038;
+    bers[3] = 0.0031456;
+    bers[4] = 8.95147 * pow(10,-5);
     FILE *fpr;
     fpr=fopen("parity1.txt","r");
     fscanf(fpr,"%d",&n);
@@ -99,7 +104,7 @@ int main(){
     }
     fclose(fpr);    
 
-    for(step = 0; step < 6; step++) {
+    for(step = 0; step < 1; step++) {
         s = 0;
         num = 0;
         totalerror = 0; 
@@ -142,7 +147,7 @@ int main(){
             //printf("Lj[i] = \n");
             ebn0 = pow(10, ebn0/10);
             for(i = 0; i < 816; i++) {
-                Lj[i] = /*log2(408) **/ 4 * 0.5 * ebn0 * outp[i];     //  0.5 * 1.2544 = Es/N0
+                Lj[i] = /*log2(408) * */4 * 0.5 * ebn0 * outp[i];     //  0.5 * 1.2544 = Es/N0
                 //printf("%g ", Lj[i]);
             }
             //printf("\n");
@@ -155,7 +160,7 @@ int main(){
                         //printf("qij[%d][%d] = %g  ", i, j, qij[i][j]);
                 }   
             }
-            printf("\n");
+            //printf("\n");
 
             // message passing
             for (k = 0; k < 100 && restart != 408; k++) {         // for predetermined
@@ -242,11 +247,24 @@ int main(){
 
             // decision
             //printf("output = ");
-            for (j = 0; j < 816; j++) {
+            int comput2[408] = {0};
+            /*for (j = 0; j < 816; j++) {
                 qj[j] = Lj[j] + uij[0][j] + uij[1][j] + uij[2][j]; 
                 if (qj[j] >= 0) output[j] = 0;
                 else if (qj[j] < 0) output[j] = 1;
                 //printf("%d ", output[j]);
+            }*/
+            for (j = 0; j < 816; j++) {
+                qj[j] = Lj[j];
+                for (i = 0; i < 3; i++) {
+                    valL = M[j][i] - 1;
+                    qj[j] += uij[valL][comput2[valL]];
+                }
+                if (qj[j] >= 0) output[j] = 0;
+                else if (qj[j] < 0) output[j] = 1;
+                for (i = 0; i < 3; i++) {
+                    comput2[M[j][i] - 1] += 1;
+                }
             }
             //printf("\n");
 
@@ -276,7 +294,8 @@ int main(){
                 s++;
             }
         }
-        printf("k[%d] = %d\n", num, k);
+        if(k == 100) printf("s = %d; k[%d] = %d\n", s, num, k);
+        //printf("s = %d; k[%d] = %d\n", s, num, k);
         error = 0;
         for(i = 0; i < 816; i++) {
             if (output[i] != cod[i]) {
@@ -306,7 +325,7 @@ int main(){
 
     FILE *outfp;
     
-    outfp = fopen("resulttry.txt","w");
+    outfp = fopen("random1.txt","w");
     for (i = 0; i < 6; i++) {
          fprintf(outfp,"%g ",ebn0s[i]);
          fprintf(outfp,"%g ",berscompare[i]);

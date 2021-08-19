@@ -17,15 +17,13 @@ double triangle(double L1, double L2);
 int main() {
     //now for matrix 7 * 7
     double x, y;               // for normal random variable
-    int i, j, k, m;         // for counting
-    //int step;
-    int num = 0;                // number of block to transmit
+    int i, j, k, m;            // for counting
+    int step;                  // for testing six data
+    int num = 0;               // number of block to transmit
     double EbN0 = 0.9844;
-    printf("%g\n", EbN0/10);
     double sigma = sqrt(pow(pow(10, EbN0/10.0), -1));
-    printf("standard deviation = %g\n",sigma);
     EbN0 = pow(10, EbN0/10.0);
-    printf("%g\n", EbN0);
+
 
     int n, rc;  // n is column and rc is row
     int dv,dc;  // dv: column have #1 and dc: row have #1
@@ -74,27 +72,29 @@ int main() {
         return 1;
     }
     
-    int *L;                 // check node connect 6 variable nodes
+    int **L = NULL;                 // check node connect 6 variable nodes
     //int Llenrow = 408;
     //int Llencolumn = 6;
-    int Llenrow = n;        // n=7
-    int Llencolumn = dv;
+    int Llenrow = rc;        // n = 408
+    int Llencolumn = dc;     // dc = 6
 
-    L = (int *)malloc(Llenrow * Llencolumn * sizeof(int));
+    L = (int **)malloc(Llenrow * sizeof(int));
+    for (i = 0; i < Llenrow; i++) L[i] = (int *)malloc(dc * sizeof(int));
     if (L == NULL) {
         // 無法取得記憶體空間
         fprintf(stderr, "Error: unable to allocate required memory\n");
         return 1;
     }
     
-    int *M;
+    int **M;
     //int MLlenrow = 816;
     //int Mlencolumn = 3;
-    int Mlenrow = rc;       // k=7
-    int Mlencolumn = dc;   //dc = 3
+    int Mlenrow = n;       // n = 816
+    int Mlencolumn = dv;   //dv = 3
 
-    M = (int *)malloc(Mlenrow * Mlencolumn * sizeof(int));
-    if (L == NULL) {
+    M = (int **)malloc(Mlenrow * sizeof(int));
+    for (i = 0; i < Mlenrow; i++) M[i] = (int *)malloc(dv * sizeof(int));
+    if (M == NULL) {
         // 無法取得記憶體空間
         fprintf(stderr, "Error: unable to allocate required memory\n");
         return 1;
@@ -127,21 +127,35 @@ int main() {
     printf("%d\n", a);
     for (i = 0; i < rc; i++) fscanf(fpr,"%d",&a);
     printf("%d\n", a);
-    int  index;
-    for (j = 0; j < n; j++) {
+    //int  index;
+    /*for (j = 0; j < n; j++) {
+        printf("122\n");
         for (i = 0; i < dv; i++) {
-            index = j * dv + i;
-            fscanf(fpr,"%d",&M[index]);
-            printf("M[%d] = %d ", index, M[index]);
+            printf("-a\n");
+            //index = j * dv + i;
+            fscanf(fpr,"%d",&M[j][i]);
+            //printf("M[%d][%d] = %d ", j,i,M[j][i]);
         }
         //printf("\n");
+    }*/
+    for (j = 0; j < n; j++) {
+        fscanf(fpr,"%d",&M[j][0]);
+        fscanf(fpr,"%d",&M[j][1]);
+        fscanf(fpr,"%d",&M[j][2]);
     }
-
+    printf("a");
+    for (j = 0; j < n; j++) {
+        for (i = 0; i < dv; i++) {
+            printf("M[%d][%d] = %d ", j,i,M[j][i]);
+        }
+        printf("\n");
+    }
+    
     for (i = 0; i < rc; i++) {
         for (j = 0; j < dc; j++) {
-            index = i * dc + j;
-            fscanf(fpr,"%d",&L[index]);
-            printf("L[%d] = %d ", index, L[index]);
+            //index = i * dc + j;
+            fscanf(fpr,"%d",&L[i][j]);
+            //printf("L[%d] = %d ", index, L[index]);
         }
         //printf("\n");
     }
@@ -193,6 +207,10 @@ int main() {
     free(outp);
     free(output);
     free(Lj);
+    for (i = 0; i < Llenrow; i++) free(L[i]);
+    free(L);
+    for (i = 0; i < Mlenrow; i++) free(M[i]);
+    free(M);
     return 0;
 }
 void normal(double sig, double *n1, double *n2)
